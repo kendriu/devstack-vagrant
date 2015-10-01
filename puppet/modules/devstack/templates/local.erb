@@ -10,7 +10,7 @@ ADMIN_PASSWORD=<%= @admin_password %>
 
 MULTI_HOST="True"
 API_RATE_LIMIT="False"
-RECLONE="True"
+RECLONE="False"
 
 # database configuration parameters
 
@@ -50,9 +50,40 @@ IMAGE_URLS+=",<%= @extra_images %>"
 # configure ceilometer (manager)
 
 enable_service dstat
-enable_service ceilometer-acompute ceilometer-acentral ceilometer-anotification ceilometer-collector ceilometer-api
-enable_service ceilometer-alarm-notifier ceilometer-alarm-evaluator
+# enable_service ceilometer-acompute ceilometer-acentral ceilometer-anotification ceilometer-collector ceilometer-api
+# enable_service ceilometer-alarm-notifier ceilometer-alarm-evaluator
 CEILOMETER_BACKEND=mongodb
+
+disable_service tempest
+disable_service heat h-api h-api-cfn h-api-cw h-eng
+disable_service ceilometer-acentral ceilometer-anotification ceilometer-collector ceilometer-api ceilometer-acompute ceilometer-alarm-notifier ceilometer-alarm-evaluator
+
+#neutron
+NEUTRON_BRANCH=stable/kilo
+disable_service n-net
+enable_service q-svc
+disable_service q-agt
+enable_service q-dhcp
+enable_service q-l3
+enable_service q-meta
+FIXED_RANGE=10.0.0.0/24
+FLOATING_RANGE=192.168.27.0/24
+PUBLIC_NETWORK_GATEWAY=192.168.27.2
+
+Q_USE_SECGROUP=True
+ENABLE_TENANT_VLANS=True
+ML2_VLAN_RANGES=physnet1:1000:1100
+PHYSICAL_NETWORK=default
+OVS_PHYSICAL_BRIDGE=br-ex
+
+VIRT_DRIVER=vsphere
+VMWAREAPI_IP=0.0.0.0
+VMWAREAPI_USER=administrator@vsphere.local
+VMWAREAPI_PASSWORD=Qwer!1234
+VMWAREAPI_CLUSTER=Cluster1
+
+IP_VERSION=4
+
 
 <% if @use_ldap == "true" %>
 # LDAP configuration parameters (manager)
@@ -65,5 +96,30 @@ enable_service ldap
 
 [[post-config|$NOVA_CONF]]
 [DEFAULT]
+neutron_url_timeout=3600
 flat_interface = eth1
 vlan_interface = eth1
+
+[[post-config|/$Q_PLUGIN_CONF_FILE]]
+[ml2]
+extension_drivers=
+
+[[post-config|$NEUTRON_CONF]]
+[DEFAULT]
+nova_admin_tenant_name="admin"
+nova_admin_username="admin"
+nova_admin_password=<%= @admin_password %>
+nova_admin_tenant_id="fill"
+notification_driver = messagingv2
+notification_topics=vmware_dvs
+dhcp_agent_notification = False
+
+[ml2_vmware]
+vsphere_hostname=0.0.0.0
+vsphere_login=administrator@vsphere.local
+vsphere_password=Qwer!1234
+
+network_maps = physnet1:dvSwitch
+
+task_poll_interval=5.0
+api_retry_count=10

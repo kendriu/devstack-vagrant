@@ -48,6 +48,8 @@ def configure_vm(name, vm, conf)
   end
 
   vm.provider :virtualbox do |vb|
+    vb.customize ["modifyvm", :id, "--memory", "8192"]
+    vb.customize ["modifyvm", :id, "--cpus", "4"]
     # you need this for openstack guests to talk to each other
     vb.customize ["modifyvm", :id, "--nicpromisc2", "allow-all"]
     # if specified assign a static MAC address
@@ -148,6 +150,9 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
     configure_vm("manager", manager.vm, conf)
     manager.vm.network "forwarded_port", guest: 80, host: 8080, host_ip: "127.0.0.1"
     manager.vm.network "forwarded_port", guest: 6080, host: 6080, host_ip: "127.0.0.1"
+    manager.vm.network "forwarded_port", guest: 5672, host: 5672, host_ip: "127.0.0.1"
+    config.vm.synced_folder "../juno", "/opt/stack", type: "nfs", nfs_export: false
+
   end
 
   if conf['hostname_compute']
@@ -168,5 +173,5 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
   if conf['local_openstack_tree']
     config.vm.synced_folder conf['local_openstack_tree'], "/home/vagrant/openstack"
   end
-
+  config.vm.network "private_network", ip: "192.168.51.10"
 end
