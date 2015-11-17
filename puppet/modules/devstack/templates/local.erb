@@ -62,7 +62,7 @@ disable_service ceilometer-acentral ceilometer-anotification ceilometer-collecto
 NEUTRON_BRANCH=stable/kilo
 disable_service n-net
 enable_service q-svc
-disable_service q-agt
+enable_service q-agt
 enable_service q-dhcp
 enable_service q-l3
 enable_service q-meta
@@ -75,12 +75,6 @@ ENABLE_TENANT_VLANS=True
 ML2_VLAN_RANGES=physnet1:1000:1100
 PHYSICAL_NETWORK=default
 OVS_PHYSICAL_BRIDGE=br-ex
-
-VIRT_DRIVER=vsphere
-VMWAREAPI_IP=0.0.0.0
-VMWAREAPI_USER=administrator@vsphere.local
-VMWAREAPI_PASSWORD=Qwer!1234
-VMWAREAPI_CLUSTER=Cluster1
 
 IP_VERSION=4
 
