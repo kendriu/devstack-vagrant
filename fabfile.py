@@ -5,7 +5,7 @@ import re
 import pika
 from fabric.api import *
 
-OS_TENANT_ID = '7688331961e349dabe0f5bac14f6bf50'
+OS_TENANT_ID = 'fill in'
 OS_CREDENTIALS_FILE = '~/devstack-admin-openrc.sh'
 PHYSNET = 'physnet1'
 
@@ -20,7 +20,8 @@ def setup():
         '~/devstack-admin-openrc.sh' % OS_TENANT_ID)
     zsh(
         'glance image-create --name esxi --disk-format vmdk '
-        '--visibility public --file ~/Downloads/TestESXi '
+        '--visibility public '
+        '--file /Users/kendriu/Archive/vmware_mech_driver/TestESXi '
         '--progress --container-format bare')
     sudo('locale-gen pl_PL.UTF-8')
     with warn_only():
