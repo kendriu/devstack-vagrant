@@ -151,7 +151,6 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
     manager.vm.network "forwarded_port", guest: 80, host: 8080, host_ip: "127.0.0.1"
     manager.vm.network "forwarded_port", guest: 6080, host: 6080, host_ip: "127.0.0.1"
     manager.vm.network "forwarded_port", guest: 5672, host: 5672, host_ip: "127.0.0.1"
-    config.vm.synced_folder "../juno", "/opt/stack", type: "nfs", nfs_export: false
 
   end
 
