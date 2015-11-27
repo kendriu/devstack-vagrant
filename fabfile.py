@@ -9,11 +9,20 @@ OPENRC_LOCATION = '~/devstack/openrc'
 
 PHYSNET = 'physnet1'
 
-@task
-def setup(local=False):
-    if not local:
-        vagrant()
 
+@task
+def vagrant():
+    env.disable_known_hosts = True
+    with warn_only():
+        cfg = local('vagrant ssh-config', capture=True)
+        cfg = dict([(n.split()[0], n.split()[1])
+                    for n in cfg.splitlines()])
+    env.key_filename = cfg['IdentityFile']
+    env.hosts = ['stack@{}:{}'.format(cfg['HostName'], cfg['Port'])]
+
+
+@task
+def setup():
     with cd('/tmp'):
         stack('wget -qO ./TestESXi.vmdk '
               'https://www.googledrive.com/host/0B7JeSl37_w2KaVIycHBmeWt2cGM')
@@ -49,10 +58,7 @@ def setup(local=False):
 
 
 @task
-def network(local=False):
-    if not local:
-        vagrant()
-
+def network():
     id_ = tenant_id('admin')
     stack(
         'neutron net-create demo --tenant-id %s --provider:network_type vlan '
@@ -67,12 +73,6 @@ def tenant_id(name):
     details = io.getvalue()
     print details
     return re.search('id\W*(\w*)', details, re.MULTILINE).groups()[0]
-
-
-def vagrant():
-    env.disable_known_hosts = True
-    result = local('vagrant ssh-config | grep IdentityFile', capture=True)
-    env.key_filename = result.split()[1]
 
 
 def stack(cmd, *args, **kwargs):
