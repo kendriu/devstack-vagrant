@@ -5,16 +5,16 @@ from fabric.api import *
 
 VMWARE_DRIVER_REPO = 'https://github.com/Mirantis/vmware-dvs.git'
 VMWARE_DRIVER_BRANCH = 'sg_new_engine'
+OPENRC_LOCATION = '~/devstack/openrc'
 
 PHYSNET = 'physnet1'
 
-env.hosts = ['127.0.0.1:2222']
-
-
 @task
-def setup():
-    vagrant()
-    with cd('/home/stack'):
+def setup(local=False):
+    if not local:
+        vagrant()
+
+    with cd('/tmp'):
         stack('wget -qO ./TestESXi.vmdk '
               'https://www.googledrive.com/host/0B7JeSl37_w2KaVIycHBmeWt2cGM')
         stack('glance image-create '
@@ -49,8 +49,10 @@ def setup():
 
 
 @task
-def network():
-    vagrant()
+def network(local=False):
+    if not local:
+        vagrant()
+
     id_ = tenant_id('admin')
     stack(
         'neutron net-create demo --tenant-id %s --provider:network_type vlan '
@@ -69,13 +71,11 @@ def tenant_id(name):
 
 def vagrant():
     env.disable_known_hosts = True
-    env.user = 'vagrant'
     result = local('vagrant ssh-config | grep IdentityFile', capture=True)
     env.key_filename = result.split()[1]
 
 
 def stack(cmd, *args, **kwargs):
-    kwargs['user'] = 'stack'
-    cmd = 'source ~/devstack/openrc && ' + cmd
+    cmd = 'source {} && {}'.format(OPENRC_LOCATION, cmd)
     with shell_env(OS_TENANT_NAME='admin', OS_USERNAME='admin'):
         return sudo(cmd, *args, **kwargs)
